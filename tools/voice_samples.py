@@ -28,7 +28,7 @@ def sample_text():
 def main(out):
     os.makedirs(out, exist_ok=True)
     text, rate = sample_text(), float(os.environ.get("GOOGLE_TTS_RATE") or 1.05)
-    current = os.environ.get("GOOGLE_TTS_VOICE") or "en-US-Chirp3-HD-Charon"
+    current = os.environ.get("GOOGLE_TTS_VOICE") or "en-US-Chirp3-HD-Aoede"
     rows = []
     for loc, label in LOCALES.items():
         voices = sorted((v for v in call(f"voices?languageCode={loc}")["voices"]
