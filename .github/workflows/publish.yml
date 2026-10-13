@@ -5,6 +5,11 @@ on:
     branches: [main]
     paths: ["episodes/**", "tools/**", ".github/workflows/publish.yml"]
   workflow_dispatch:
+    inputs:
+      voice_samples:
+        description: Render a sample in every Chirp 3 HD voice to /voices/
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -31,16 +36,25 @@ jobs:
         env:
           GOOGLE_TTS_API_KEY: ${{ secrets.GOOGLE_TTS_API_KEY }}
           GOOGLE_TTS_VOICE: ${{ vars.GOOGLE_TTS_VOICE }}
+          GOOGLE_TTS_RATE: ${{ vars.GOOGLE_TTS_RATE }}
         run: |
           for t in episodes/*.txt; do
             mp3="${t%.txt}.mp3"
             [ -f "$mp3" ] || python3 tools/tts.py "$t" "$mp3"
           done
+      - name: Make voice samples
+        if: ${{ inputs.voice_samples }}
+        env:
+          GOOGLE_TTS_API_KEY: ${{ secrets.GOOGLE_TTS_API_KEY }}
+          GOOGLE_TTS_VOICE: ${{ vars.GOOGLE_TTS_VOICE }}
+          GOOGLE_TTS_RATE: ${{ vars.GOOGLE_TTS_RATE }}
+        run: python3 tools/voice_samples.py voices
       - name: Commit new audio
         run: |
           git config user.name "aging-briefing-bot"
           git config user.email "actions@users.noreply.github.com"
           git add episodes/*.mp3
+          if [ -d voices ]; then git add voices; fi
           git diff --cached --quiet || (git commit -m "Add episode audio" && git push)
       - name: Build feed
         run: python3 tools/build_feed.py . "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
@@ -49,6 +63,7 @@ jobs:
           mkdir -p _site/episodes
           cp feed.xml index.html _site/
           cp episodes/*.mp3 _site/episodes/
+          [ -d voices ] && cp -r voices _site/ || true
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
