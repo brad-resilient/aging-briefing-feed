@@ -11,9 +11,9 @@ API = "https://texttospeech.googleapis.com/v1"
 LOCALES = {"en-US": "American", "en-GB": "British", "en-AU": "Australian"}
 
 def call(path, body=None):
-    req = urllib.request.Request(f"{API}/{path}{'&' if '?' in path else '?'}key={KEY}",
+    req = urllib.request.Request(f"{API}/{path}",
                                  data=json.dumps(body).encode() if body else None,
-                                 headers={"Content-Type": "application/json"})
+                                 headers={"Content-Type": "application/json", "X-Goog-Api-Key": KEY})
     return json.load(urllib.request.urlopen(req, timeout=120))
 
 def sample_text():

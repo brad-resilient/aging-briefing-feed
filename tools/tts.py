@@ -34,8 +34,8 @@ def google(text, key, workdir):
                 body = json.dumps({"input": {"text": c},
                                    "voice": {"languageCode": "-".join(voice.split("-")[:2]), "name": voice},
                                    "audioConfig": {"audioEncoding": "MP3", "speakingRate": float(os.environ.get("GOOGLE_TTS_RATE") or 1.05)}}).encode()
-                req = urllib.request.Request(f"https://texttospeech.googleapis.com/v1/text:synthesize?key={key}",
-                                             data=body, headers={"Content-Type": "application/json"})
+                req = urllib.request.Request("https://texttospeech.googleapis.com/v1/text:synthesize",
+                                             data=body, headers={"Content-Type": "application/json", "X-Goog-Api-Key": key})
                 audio = json.load(urllib.request.urlopen(req, timeout=120))["audioContent"]
                 p = os.path.join(workdir, f"g{i:03d}.mp3"); open(p, "wb").write(base64.b64decode(audio)); parts.append(p)
             return parts, f"Google {voice}"
